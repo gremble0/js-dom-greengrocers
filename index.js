@@ -142,6 +142,32 @@ function createFilterElement() {
   return form;
 }
 
+function createSortElement() {
+  const form = document.createElement("form");
+
+  const alphabeticallyCheckbox = createCheckbox(
+    "alphabetically",
+    "sort-by-alphabetically",
+    "sortByAlphabetically",
+    true,
+  );
+  form.appendChild(alphabeticallyCheckbox);
+
+  const priceCheckbox = createCheckbox(
+    "price",
+    "sort-by-price",
+    "sortByPrice",
+    true,
+  );
+  form.appendChild(priceCheckbox);
+
+  const submitButton = createButton("sort by", null);
+  submitButton.setAttribute("type", "submit");
+  form.appendChild(submitButton);
+
+  return form;
+}
+
 function addToTotal(price) {
   const totalElement = document.querySelector(".total-number");
   const totalPrice = parseFloat(totalElement.innerHTML.slice(1));
@@ -193,20 +219,34 @@ function addToCart(item) {
 
 const storeItemList = document.querySelector(".store--item-list");
 
-const pathParams = location.search.substring(1);
-if (pathParams.length > 0) {
-  if (pathParams.includes("filterByFruits"))
-    state.items
-      .filter((item) => item.type == "fruit")
-      .forEach((item) => storeItemList.appendChild(createItemElement(item)));
+let storeItems = [];
+let shouldAddAll = true;
+if (location.search.includes("filterByFruits")) {
+  state.items
+    .filter((item) => item.type == "fruit")
+    .forEach((item) => storeItems.push(item));
+  shouldAddAll = false;
+}
 
-  if (pathParams.includes("filterByVegetables"))
-    state.items
-      .filter((item) => item.type == "vegetable")
-      .forEach((item) => storeItemList.appendChild(createItemElement(item)));
-} else
-  state.items.forEach((item) =>
-    storeItemList.appendChild(createItemElement(item)),
+if (location.search.includes("filterByVegetables")) {
+  state.items
+    .filter((item) => item.type == "vegetable")
+    .forEach((item) => storeItems.push(item));
+  shouldAddAll = false;
+}
+
+if (shouldAddAll) storeItems = state.items;
+
+if (location.search.includes("sortByAlphabetically"))
+  storeItems = storeItems.sort((item1, item2) =>
+    item1.name.localeCompare(item2.name),
   );
+else if (location.search.includes("sortByPrice"))
+  storeItems = storeItems.sort((item1, item2) => item1.price - item2.price);
+
+storeItems.forEach((item) =>
+  storeItemList.appendChild(createItemElement(item)),
+);
 
 storeItemList.appendChild(createFilterElement());
+storeItemList.appendChild(createSortElement());
