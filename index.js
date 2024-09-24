@@ -3,51 +3,61 @@ const state = {
     {
       id: "001-beetroot",
       name: "beetroot",
+      type: "vegetable",
       price: 0.35,
     },
     {
       id: "002-carrot",
       name: "carrot",
+      type: "vegetable",
       price: 0.35,
     },
     {
       id: "003-apple",
       name: "apple",
+      type: "fruit",
       price: 0.35,
     },
     {
       id: "004-apricot",
       name: "apricot",
+      type: "fruit",
       price: 0.35,
     },
     {
       id: "005-avocado",
       name: "avocado",
+      type: "vegetable",
       price: 0.35,
     },
     {
       id: "006-bananas",
       name: "bananas",
+      type: "fruit",
       price: 0.35,
     },
     {
       id: "007-bell-pepper",
       name: "bell pepper",
+      type: "vegetable",
       price: 0.35,
     },
     {
       id: "008-berry",
       name: "berry",
+      type: "fruit",
       price: 0.35,
     },
     {
       id: "009-blueberry",
       name: "blueberry",
+      type: "fruit",
       price: 0.35,
     },
     {
       id: "010-eggplant",
       name: "eggplant",
+      type: "vegetable",
       price: 0.35,
     },
   ],
@@ -81,11 +91,55 @@ function createButton(label, onClick) {
   return button;
 }
 
+function createCheckbox(label, className, name, value) {
+  const wrapperElement = document.createElement("div");
+
+  const checkboxElement = document.createElement("input");
+  checkboxElement.setAttribute("type", "checkbox");
+  checkboxElement.setAttribute("id", className);
+  checkboxElement.setAttribute("value", value);
+  checkboxElement.setAttribute("name", name);
+  wrapperElement.appendChild(checkboxElement);
+
+  const labelElement = document.createElement("label");
+  labelElement.setAttribute("for", className);
+  labelElement.innerHTML = label;
+  wrapperElement.appendChild(labelElement);
+
+  return wrapperElement;
+}
+
 function createItemElement(item) {
   const element = createItemDescriptionElement(item);
   element.appendChild(createButton("Add to cart", (_) => addToCart(item)));
 
   return element;
+}
+
+function createFilterElement() {
+  const form = document.createElement("form");
+
+  const vegetableCheckBox = createCheckbox(
+    "vegetables",
+    "filter-by-vegetables",
+    "filterByVegetables",
+    true,
+  );
+  form.appendChild(vegetableCheckBox);
+
+  const fruitCheckbox = createCheckbox(
+    "fruits",
+    "filter-by-fruits",
+    "filterByFruits",
+    true,
+  );
+  form.appendChild(fruitCheckbox);
+
+  const submitButton = createButton("filter by", null);
+  submitButton.setAttribute("type", "submit");
+  form.appendChild(submitButton);
+
+  return form;
 }
 
 function addToTotal(price) {
@@ -139,6 +193,20 @@ function addToCart(item) {
 
 const storeItemList = document.querySelector(".store--item-list");
 
-state.items.forEach((item) => {
-  storeItemList.appendChild(createItemElement(item));
-});
+const pathParams = location.search.substring(1);
+if (pathParams.length > 0) {
+  if (pathParams.includes("filterByFruits"))
+    state.items
+      .filter((item) => item.type == "fruit")
+      .forEach((item) => storeItemList.appendChild(createItemElement(item)));
+
+  if (pathParams.includes("filterByVegetables"))
+    state.items
+      .filter((item) => item.type == "vegetable")
+      .forEach((item) => storeItemList.appendChild(createItemElement(item)));
+} else
+  state.items.forEach((item) =>
+    storeItemList.appendChild(createItemElement(item)),
+  );
+
+storeItemList.appendChild(createFilterElement());
